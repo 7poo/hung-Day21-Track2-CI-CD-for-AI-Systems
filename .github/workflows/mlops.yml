@@ -4,6 +4,7 @@ on:
   push:
     branches: [master, main]
     paths:
+      - '.github/workflows/**'
       - 'data/**.dvc'
       - 'src/**.py'
       - 'params.yaml'
