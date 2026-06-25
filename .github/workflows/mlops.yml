@@ -60,16 +60,36 @@ jobs:
         env:
           CLOUD_CREDENTIALS: ${{ secrets.CLOUD_CREDENTIALS }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID_SECRET: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           python - <<'EOF'
           import json
           import os
-          creds = os.environ['CLOUD_CREDENTIALS']
-          data = json.loads(creds)
-          region = os.environ.get('AWS_REGION') or data.get('region', 'us-east-1')
+          import sys
+
+          creds = os.environ.get('CLOUD_CREDENTIALS', '').strip()
+          access_key = os.environ.get('AWS_ACCESS_KEY_ID_SECRET', '').strip()
+          secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY_SECRET', '').strip()
+          region = os.environ.get('AWS_REGION', '').strip() or 'us-east-1'
+
+          if creds:
+              try:
+                  data = json.loads(creds)
+              except json.JSONDecodeError as exc:
+                  raise SystemExit(f"Invalid CLOUD_CREDENTIALS format: expected a JSON object. Error: {exc}") from exc
+              if 'aws_access_key_id' not in data or 'aws_secret_access_key' not in data:
+                  raise SystemExit("CLOUD_CREDENTIALS must contain aws_access_key_id and aws_secret_access_key")
+              access_key = data['aws_access_key_id']
+              secret_key = data['aws_secret_access_key']
+          elif access_key and secret_key:
+              pass
+          else:
+              raise SystemExit("Missing AWS credentials. Set either CLOUD_CREDENTIALS (JSON) or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY secrets.")
+
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as fh:
-              fh.write(f"AWS_ACCESS_KEY_ID={data['aws_access_key_id']}\n")
-              fh.write(f"AWS_SECRET_ACCESS_KEY={data['aws_secret_access_key']}\n")
+              fh.write(f"AWS_ACCESS_KEY_ID={access_key}\n")
+              fh.write(f"AWS_SECRET_ACCESS_KEY={secret_key}\n")
               fh.write(f"AWS_DEFAULT_REGION={region}\n")
           EOF
 
