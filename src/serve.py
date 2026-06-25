@@ -14,6 +14,7 @@ app = FastAPI()
 S3_BUCKET = os.environ.get("CLOUD_BUCKET") or os.environ.get("AWS_BUCKET")
 S3_MODEL_KEY = "models/latest/model.pkl"
 MODEL_PATH = os.environ.get("MODEL_PATH", os.path.expanduser("~/models/model.pkl"))
+model = None
 
 
 def download_model():
@@ -31,11 +32,14 @@ def download_model():
     print("Model downloaded from S3.")
 
 
-if os.path.exists(MODEL_PATH):
-    model = joblib.load(MODEL_PATH)
-else:
-    download_model()
-    model = joblib.load(MODEL_PATH)
+def get_model():
+    """Load model lazily so /health can work even before the model is downloaded."""
+    global model
+    if model is None:
+        if not os.path.exists(MODEL_PATH):
+            download_model()
+        model = joblib.load(MODEL_PATH)
+    return model
 
 
 class PredictRequest(BaseModel):
@@ -54,7 +58,8 @@ def predict(req: PredictRequest):
     if len(req.features) != 12:
         raise HTTPException(status_code=400, detail="Expected 12 features (wine quality)")
 
-    pred = int(model.predict([req.features])[0])
+    loaded_model = get_model()
+    pred = int(loaded_model.predict([req.features])[0])
     labels = {0: "thap", 1: "trung_binh", 2: "cao"}
     return {"prediction": pred, "label": labels.get(pred, "unknown")}
 

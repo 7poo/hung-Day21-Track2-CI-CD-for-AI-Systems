@@ -213,4 +213,10 @@ jobs:
             sudo systemctl enable mlops-serve
             sudo systemctl restart mlops-serve
             sleep 5
-            curl -sf http://localhost:8000/health && echo "Health check passed." || exit 1
+            if curl -sf http://localhost:8000/health; then
+              echo "Health check passed."
+            else
+              sudo systemctl status mlops-serve --no-pager || true
+              sudo journalctl -u mlops-serve -n 80 --no-pager || true
+              exit 1
+            fi
