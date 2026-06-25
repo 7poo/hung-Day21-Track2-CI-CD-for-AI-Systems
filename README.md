@@ -219,6 +219,10 @@ pyyaml==6.0.1
 
 Bắt đầu từ [Bước 1](tasks/buoc-1.md).
 
+## AWS Notes
+
+Repo hiện đã được cấu hình theo AWS S3 thay vì GCP. Bạn chỉ cần cung cấp các secrets và cấu hình DVC remote ở local trước khi push.
+
 ---
 
 ## Rubric Chấm Điểm

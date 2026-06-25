@@ -1,0 +1,6 @@
+[core]
+    no_scm = True
+    remote = myremote
+['remote "myremote"']
+    url = s3://labd21-027355626328-us-east-1-an/dvc
+    region = us-east-1
