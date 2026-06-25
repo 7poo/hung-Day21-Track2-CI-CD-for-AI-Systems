@@ -1,3 +1,11 @@
-max_depth: 10
-min_samples_split: 5
-n_estimators: 200
+model_type: extra_trees
+train_data_paths:
+  - data/train_phase1.csv
+  - data/train_phase2.csv
+eval_path: data/eval.csv
+model_params:
+  n_estimators: 500
+  max_depth: null
+  min_samples_split: 2
+  class_weight: balanced
+  n_jobs: -1

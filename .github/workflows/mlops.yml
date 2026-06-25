@@ -95,7 +95,7 @@ jobs:
           EOF
 
       - name: Pull data with DVC
-        run: dvc pull data/train_phase1.csv data/eval.csv
+        run: dvc pull data/train_phase1.csv data/train_phase2.csv data/eval.csv
 
       - name: Train model
         run: python src/train.py
@@ -143,7 +143,7 @@ jobs:
           python - <<'EOF'
           import os
           acc = float(os.environ['ACC'])
-          threshold = 0.64
+          threshold = 0.70
           if acc < threshold:
               raise SystemExit(f"FAILED: accuracy {acc:.4f} < {threshold:.2f}. Huy deploy.")
           print(f"PASSED: accuracy {acc:.4f} meets threshold {threshold:.2f}, proceeding to deploy.")
